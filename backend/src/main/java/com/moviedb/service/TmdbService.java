@@ -12,7 +12,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,6 +72,28 @@ public class TmdbService {
         return getCuratedRecentMovies();
     }
 
+    private static final Map<Integer, String> TMDB_GENRES = Map.ofEntries(
+            Map.entry(28, "Action"),
+            Map.entry(12, "Adventure"),
+            Map.entry(16, "Animation"),
+            Map.entry(35, "Comedy"),
+            Map.entry(80, "Crime"),
+            Map.entry(99, "Documentary"),
+            Map.entry(18, "Drama"),
+            Map.entry(10751, "Family"),
+            Map.entry(14, "Fantasy"),
+            Map.entry(36, "History"),
+            Map.entry(27, "Horror"),
+            Map.entry(10402, "Music"),
+            Map.entry(9648, "Mystery"),
+            Map.entry(10749, "Romance"),
+            Map.entry(878, "Sci-Fi"),
+            Map.entry(10770, "TV Movie"),
+            Map.entry(53, "Thriller"),
+            Map.entry(10752, "War"),
+            Map.entry(37, "Western")
+    );
+
     public List<MovieDto> searchMovies(String query) {
         if (query == null || query.trim().isEmpty()) {
             return Collections.emptyList();
@@ -77,9 +101,18 @@ public class TmdbService {
 
         if (tmdbConfig.hasApiKey()) {
             try {
-                String url = String.format("%s/search/movie?api_key=%s&query=%s&include_adult=false&language=en-US&page=1",
-                        tmdbConfig.getBaseUrl(), tmdbConfig.getApiKey(), query.trim());
-                return fetchMoviesFromTmdb(url);
+                URI uri = UriComponentsBuilder.fromHttpUrl(tmdbConfig.getBaseUrl() + "/search/movie")
+                        .queryParam("api_key", tmdbConfig.getApiKey())
+                        .queryParam("query", query.trim())
+                        .queryParam("include_adult", false)
+                        .queryParam("language", "en-US")
+                        .queryParam("page", 1)
+                        .build()
+                        .toUri();
+                List<MovieDto> results = fetchMoviesFromTmdb(uri);
+                if (results != null && !results.isEmpty()) {
+                    return results;
+                }
             } catch (Exception e) {
                 log.warn("Failed to search movies from TMDB API: {}. Searching local repository.", e.getMessage());
             }
@@ -164,27 +197,37 @@ public class TmdbService {
     }
 
     @SuppressWarnings("unchecked")
-    private List<MovieDto> fetchMoviesFromTmdb(String url) {
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                url, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+    private List<MovieDto> fetchMoviesFromTmdb(URI uri) {
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    uri, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
-        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                return Collections.emptyList();
+            }
+
+            List<Map<String, Object>> results = (List<Map<String, Object>>) response.getBody().get("results");
+            if (results == null) return Collections.emptyList();
+
+            List<MovieDto> list = new ArrayList<>();
+            for (Map<String, Object> item : results) {
+                MovieDto dto = mapTmdbItemToDto(item);
+                if (dto != null) {
+                    list.add(dto);
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.warn("Error fetching movies from TMDB: {}", e.getMessage());
             return Collections.emptyList();
         }
-
-        List<Map<String, Object>> results = (List<Map<String, Object>>) response.getBody().get("results");
-        if (results == null) return Collections.emptyList();
-
-        List<MovieDto> list = new ArrayList<>();
-        for (Map<String, Object> item : results) {
-            MovieDto dto = mapTmdbItemToDto(item);
-            if (dto != null) {
-                list.add(dto);
-            }
-        }
-        return list;
     }
 
+    private List<MovieDto> fetchMoviesFromTmdb(String url) {
+        return fetchMoviesFromTmdb(URI.create(url));
+    }
+
+    @SuppressWarnings("unchecked")
     private MovieDto mapTmdbItemToDto(Map<String, Object> item) {
         try {
             MovieDto dto = new MovieDto();
@@ -196,6 +239,18 @@ public class TmdbService {
             dto.setOverview((String) item.get("overview"));
             if (item.get("vote_average") != null) {
                 dto.setVoteAverage(((Number) item.get("vote_average")).doubleValue());
+            }
+
+            List<Number> genreIds = (List<Number>) item.get("genre_ids");
+            if (genreIds != null && !genreIds.isEmpty()) {
+                List<String> names = genreIds.stream()
+                        .map(id -> TMDB_GENRES.get(id.intValue()))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+                if (!names.isEmpty()) {
+                    dto.setGenreList(names);
+                    dto.setGenres(String.join(", ", names));
+                }
             }
             return dto;
         } catch (Exception e) {
