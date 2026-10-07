@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { List, PlusCircle } from 'lucide-react';
 import { listService } from '../services/listService';
 
 export const NewList = () => {

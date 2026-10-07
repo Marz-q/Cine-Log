@@ -1,7 +1,8 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
-import { Film, Heart } from 'lucide-react';
+import { CineBotModal } from '../components/CineBotModal';
+import { Film } from 'lucide-react';
 
 export const RootLayout = () => {
   return (
@@ -11,6 +12,8 @@ export const RootLayout = () => {
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>
+
+      <CineBotModal />
 
       <footer
         style={{

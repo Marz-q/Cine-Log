@@ -7,7 +7,7 @@ import { LoadingState } from '../components/LoadingState';
 import { useAuth } from '../context/AuthContext';
 
 export const Home = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [popular, setPopular] = useState([]);
   const [trending, setTrending] = useState([]);
   const [recent, setRecent] = useState([]);

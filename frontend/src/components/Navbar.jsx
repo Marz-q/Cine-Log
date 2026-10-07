@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Film, Compass, List, Bookmark, Users, LogOut, Menu, X, PlusCircle } from 'lucide-react';
+import { Film, Compass, List, Bookmark, Users, LogOut, Menu, X, PlusCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserAvatar } from './UserAvatar';
 import { SearchBar } from './SearchBar';
@@ -109,6 +109,25 @@ export const Navbar = () => {
               </NavLink>
             </>
           )}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-cinebot'))}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              color: 'var(--yellow-butter)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+            title="Ask CineBot AI for movie suggestions by genre"
+          >
+            <Sparkles size={16} color="var(--yellow-butter)" /> CineBot AI
+          </button>
         </nav>
 
         {/* Search Bar */}
@@ -215,6 +234,24 @@ export const Navbar = () => {
             <NavLink to="/lists" onClick={() => setMobileMenuOpen(false)} style={navLinkStyle}>
               <List size={16} /> Lists
             </NavLink>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                window.dispatchEvent(new CustomEvent('open-cinebot'));
+              }}
+              style={{
+                ...navLinkStyle({ isActive: false }),
+                background: 'none',
+                border: 'none',
+                color: 'var(--yellow-butter)',
+                cursor: 'pointer',
+                textAlign: 'left',
+                padding: '0.4rem 0',
+              }}
+            >
+              <Sparkles size={16} color="var(--yellow-butter)" /> CineBot AI Curator
+            </button>
             {isAuthenticated ? (
               <>
                 <NavLink to="/watchlist" onClick={() => setMobileMenuOpen(false)} style={navLinkStyle}>

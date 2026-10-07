@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Sparkles, MessageSquare, Star, Eye } from 'lucide-react';
+import { Users, Sparkles } from 'lucide-react';
 import { userService } from '../services/userService';
 import { movieService } from '../services/movieService';
-import { useAuth } from '../context/AuthContext';
 import { UserAvatar } from '../components/UserAvatar';
 import { LoadingState } from '../components/LoadingState';
 
 export const Feed = () => {
-  const { user } = useAuth();
   const [activities, setActivities] = useState([]);
   const [tasteProfile, setTasteProfile] = useState(null);
   const [loading, setLoading] = useState(true);

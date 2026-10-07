@@ -11,6 +11,13 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('cine_log_token') || null);
   const [loading, setLoading] = useState(true);
 
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('cine_log_token');
+    localStorage.removeItem('cine_log_user');
+  };
+
   useEffect(() => {
     const initAuth = async () => {
       const storedToken = localStorage.getItem('cine_log_token');
@@ -46,13 +53,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('cine_log_token', data.token);
     localStorage.setItem('cine_log_user', JSON.stringify(data.user));
     return data;
-  };
-
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('cine_log_token');
-    localStorage.removeItem('cine_log_user');
   };
 
   const updateUser = (updated) => {

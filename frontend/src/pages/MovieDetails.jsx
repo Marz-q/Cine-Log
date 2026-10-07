@@ -22,7 +22,7 @@ import { LoadingState } from '../components/LoadingState';
 
 export const MovieDetails = () => {
   const { id } = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [movie, setMovie] = useState(null);
   const [reviews, setReviews] = useState([]);

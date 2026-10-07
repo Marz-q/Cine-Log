@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { List as ListIcon, Plus, Trash2, Calendar, User as UserIcon, X } from 'lucide-react';
+import { Plus, Trash2, Calendar, User as UserIcon, X } from 'lucide-react';
 import { listService } from '../services/listService';
 import { movieService } from '../services/movieService';
 import { useAuth } from '../context/AuthContext';
@@ -24,10 +24,6 @@ export const ListDetails = () => {
 
   const isOwner = user && list && user.id === list.userId;
 
-  useEffect(() => {
-    fetchList();
-  }, [id]);
-
   const fetchList = async () => {
     setLoading(true);
     try {
@@ -40,6 +36,10 @@ export const ListDetails = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchList();
+  }, [id]);
 
   const handleSearchMovies = async (e) => {
     e.preventDefault();

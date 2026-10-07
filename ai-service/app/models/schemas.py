@@ -41,3 +41,17 @@ class TasteProfileResponse(BaseModel):
     total_movies_logged: int
     dominant_tone: str
     taste_summary: str
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    genre: Optional[str] = None
+    messages: List[ChatMessage]
+    excluded_titles: List[str] = Field(default_factory=list)
+
+class ChatResponse(BaseModel):
+    reply: str
+    suggested_titles: List[str] = Field(default_factory=list)
+
